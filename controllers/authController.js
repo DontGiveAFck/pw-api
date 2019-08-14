@@ -16,7 +16,9 @@ export const createUser = async (body) => {
         const result = await usersCollection.insertOne( {
             username,
             password,
-            email
+            email,
+            balance: 500,
+            transactions: []
         });
 
         return await jwt.sign({
@@ -37,19 +39,19 @@ export const login = async (req, res) => {
 
     try {
         if (!email || !password) {
-            return res.code(400).json({errorMessage: 'You must send email and password.'});
+            return res.status(400).json({errorMessage: 'You must send email and password.'});
         }
-        const resArray = [];
-        await usersCollection.find({email, password}).forEach(item => resArray.push(item));
+        const user = await usersCollection.findOne({email, password});
 
-        if (resArray.length) {
+        if (user) {
             const id_token = await jwt.sign({
                 email
             }, process.env.JWT_PRIVATE_KEY);
 
-            return res.code(200).json(id_token);
+            return res.status(200).json(id_token);
         } else {
-            return res.code(401).json({errorMessage: 'Invalid email or password.'});
+
+            return res.status(401).json({errorMessage: 'Invalid email or password.'});
         }
 
     } catch (e) {

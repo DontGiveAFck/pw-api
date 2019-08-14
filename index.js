@@ -4,6 +4,8 @@ import bearerToken from 'express-bearer-token';
 import database from './database/connection';
 import dotenv from 'dotenv';
 import {createUser, getUsersList, login} from './controllers/authController';
+import {createTransaction, getLoggedUserInfo} from "./controllers/userProfileConroller";
+
 dotenv.config();
 
 const app = express();
@@ -27,13 +29,21 @@ app.post('/users', async (req, res) => {
 });
 
 app.post('/sessions/create', async (req, res) => {
-   await login(req, res);
+    await login(req, res);
+});
+
+// TODO - limit, offset
+app.get('/users', async (req, res) => {
+    await getUsersList(req, res);
 });
 
 // protected
-// TODO - limit, offset
-app.get('/users', async (req, res) => {
-    const resJson = await getUsersList(req, res);
+app.post('/api/protected/transactions', async (req, res) => {
+    await createTransaction(req, res);
+});
+
+app.get('/api/protected/user-info', (req, res) => {
+    getLoggedUserInfo(req, res);
 });
 
 app.listen(PORT, () => {
