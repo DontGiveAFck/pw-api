@@ -39,7 +39,7 @@ export const login = async (req, res) => {
 
     try {
         if (!email || !password) {
-            return res.status(400).json({errorMessage: 'You must send email and password.'});
+            return res.status(400).send('You must send email and password.');
         }
         const user = await usersCollection.findOne({email, password});
 
@@ -51,7 +51,7 @@ export const login = async (req, res) => {
             return res.status(200).json(id_token);
         } else {
 
-            return res.status(401).json({errorMessage: 'Invalid email or password.'});
+            return res.status(401).send('Invalid email or password.');
         }
 
     } catch (e) {

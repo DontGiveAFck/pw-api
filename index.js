@@ -4,7 +4,7 @@ import bearerToken from 'express-bearer-token';
 import database from './database/connection';
 import dotenv from 'dotenv';
 import {createUser, getUsersList, login} from './controllers/authController';
-import {createTransaction, getLoggedUserInfo} from "./controllers/userProfileConroller";
+import {createTransaction, getLoggedUserInfo, getLoggedUserTransactions} from "./controllers/userProfileConroller";
 
 dotenv.config();
 
@@ -43,7 +43,11 @@ app.post('/api/protected/transactions', async (req, res) => {
 });
 
 app.get('/api/protected/user-info', (req, res) => {
-    getLoggedUserInfo(req, res);
+        getLoggedUserInfo(req, res);
+});
+
+app.get('/api/protected/transactions', (req, res) => {
+    getLoggedUserTransactions(req, res);
 });
 
 app.listen(PORT, () => {

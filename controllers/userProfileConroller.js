@@ -14,9 +14,7 @@ export const createTransaction = async (req, res) => {
     try {
         await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
     } catch (e) {
-        return res.status(401).json({
-            errorMessage: 'UnauthorizedError'
-        })
+        return res.status(401).send('UnauthorizedError');
     }
 
     const {
@@ -25,9 +23,7 @@ export const createTransaction = async (req, res) => {
     } = req.body;
 
     if (!username || amount <= 0) {
-        return res.status(400).json({
-            errorMessage: 'Invalid username or amount'
-        });
+        return res.status(400).send('Invalid username or amount');
     }
 
     // get sender email from token
@@ -38,17 +34,13 @@ export const createTransaction = async (req, res) => {
 
     // check if sender balance enough
     if (sender.balance < amount) {
-        return res.status(400).json({
-            errorMessage: 'balance exceeded'
-        })
+        return res.status(400).send('balance exceeded');
     }
 
     // find recipient
     const recipient = await usersCollection.findOne({username});
     if (!recipient) {
-        return res.status(400).json({
-            errorMessage: 'user not found'
-        })
+        return res.status(400).send('user not found');
     }
 
     // update recipient balance
@@ -106,9 +98,7 @@ export const getLoggedUserInfo = async (req, res) => {
     try {
         await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
     } catch (e) {
-        return res.status(401).json({
-            errorMessage: 'UnauthorizedError'
-        })
+        return res.status(401).send('UnauthorizedError');
     }
 
     const { email } = jsonwebtoken.decode(token);
@@ -120,8 +110,32 @@ export const getLoggedUserInfo = async (req, res) => {
     } catch (e) {
         console.log(e);
 
-        return res.status(503).json({
-            errorMessage: 'Something went wrong.'
-        })
+        return res.status(503).send('Something went wrong.');
     }
 };
+
+export const getLoggedUserTransactions = async (req, res) => {
+    const db = database.getDb();
+    const usersCollection = db.collection('users');
+    const { token } = req;
+
+    try {
+        await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+    } catch (e) {
+        return res.status(401).send('UnauthorizedError');
+    }
+
+    const { email } = jsonwebtoken.decode(token);
+
+    try {
+        const user = await usersCollection.findOne({email});
+
+        return res.json(user.transactions);
+    } catch (e) {
+        console.log(e);
+
+        return res.status(503).send('Something went wrong.');
+    }
+};
+
+
