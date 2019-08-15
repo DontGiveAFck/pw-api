@@ -12,8 +12,18 @@ export const createUser = async (body) => {
         email
     } = body;
 
+    if (!username || !password || email) {
+        return res.status(400).send('You must fill all fields');
+    }
+
+    const isExists = await usersCollection.findOne({$or: [{username}, {email}]});
+
+    if (isExists) {
+        return res.status(400).send('A user with that email or username already exists.');
+    }
+
     try {
-        const result = await usersCollection.insertOne( {
+        await usersCollection.insertOne( {
             username,
             password,
             email,

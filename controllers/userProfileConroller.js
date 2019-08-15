@@ -104,7 +104,7 @@ export const getLoggedUserInfo = async (req, res) => {
     const { email } = jsonwebtoken.decode(token);
 
     try {
-        const user = await usersCollection.findOne({email});
+        const user = await usersCollection.findOne({email}, {username: 1});
 
         return res.json(user);
     } catch (e) {
@@ -138,4 +138,24 @@ export const getLoggedUserTransactions = async (req, res) => {
     }
 };
 
+export const getFilteredUsersList = async (req, res) => {
+    const db = database.getDb();
+    const usersCollection = db.collection('users');
+    const { token, body } = req;
 
+    try {
+        await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+    } catch (e) {
+        return res.status(401).send('UnauthorizedError');
+    }
+
+    const { filter } = body;
+
+    const resArray = [];
+    await usersCollection.find({"username": {$regex : `.*${filter}.*`}})
+        .forEach(item => resArray.push(item));
+
+    const mappedResArray = resArray.map(item => ({id: item._id, name: item.username}));
+
+    return res.json(mappedResArray);
+};
