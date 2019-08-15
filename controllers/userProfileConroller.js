@@ -18,10 +18,10 @@ export const createTransaction = async (req, res) => {
     }
 
     const {
-        username,
+        name: username,
         amount
     } = req.body;
-
+    console.log(req.body)
     if (!username || amount <= 0) {
         return res.status(400).send('Invalid username or amount');
     }
@@ -106,7 +106,7 @@ export const getLoggedUserInfo = async (req, res) => {
     try {
         const user = await usersCollection.findOne({email}, {username: 1});
 
-        return res.json(user);
+        return res.json({user_info_token: {...user, name: user.username}});
     } catch (e) {
         console.log(e);
 
@@ -130,7 +130,7 @@ export const getLoggedUserTransactions = async (req, res) => {
     try {
         const user = await usersCollection.findOne({email});
 
-        return res.json(user.transactions);
+        return res.json({trans_token: user.transactions});
     } catch (e) {
         console.log(e);
 

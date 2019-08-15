@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import bodyParser from 'body-parser';
 import bearerToken from 'express-bearer-token';
 import database from './database/connection';
@@ -10,7 +11,10 @@ dotenv.config();
 
 const app = express();
 
+app.use(cors());
+
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
 
 app.use(bearerToken());
 
@@ -24,8 +28,8 @@ app.get('/', (req, res) => {
 });
 
 app.post('/users', async (req, res) => {
-    const resJson = await createUser(req.body);
-    res.json(resJson);
+    const resJson = await createUser(req, res);
+    // res.json(resJson);
 });
 
 app.post('/sessions/create', async (req, res) => {
