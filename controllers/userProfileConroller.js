@@ -1,8 +1,10 @@
-const jwt = require('jwt-then');
-const jsonwebtoken = require('jsonwebtoken');
+import bluebird from 'bluebird';
+import jwt from 'jsonwebtoken';
 import database from '../database/connection';
 import dotenv from 'dotenv';
 dotenv.config();
+
+const jwtVerify = bluebird.promisify(jwt.verify);
 
 export const createTransaction = async (req, res) => {
     const db = database.getDb();
@@ -12,7 +14,7 @@ export const createTransaction = async (req, res) => {
     const token = req.token;
 
     try {
-        await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+        await jwtVerify(token, process.env.JWT_PRIVATE_KEY);
     } catch (e) {
         return res.status(401).send('UnauthorizedError');
     }
@@ -21,13 +23,13 @@ export const createTransaction = async (req, res) => {
         name: username,
         amount
     } = req.body;
-    console.log(req.body)
+
     if (!username || amount <= 0) {
         return res.status(400).send('Invalid username or amount');
     }
 
     // get sender email from token
-    const { email: senderEmail} = jsonwebtoken.decode(token);
+    const { email: senderEmail} = jwt.decode(token);
 
     // find sender
     const sender = await usersCollection.findOne({email: senderEmail});
@@ -96,12 +98,12 @@ export const getLoggedUserInfo = async (req, res) => {
     const { token } = req;
 
     try {
-        await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+        await jwtVerify(token, process.env.JWT_PRIVATE_KEY);
     } catch (e) {
         return res.status(401).send('UnauthorizedError');
     }
 
-    const { email } = jsonwebtoken.decode(token);
+    const { email } = jwt.decode(token);
 
     try {
         const user = await usersCollection.findOne({email}, {username: 1});
@@ -120,12 +122,12 @@ export const getLoggedUserTransactions = async (req, res) => {
     const { token } = req;
 
     try {
-        await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+        await jwtVerify(token, process.env.JWT_PRIVATE_KEY);
     } catch (e) {
         return res.status(401).send('UnauthorizedError');
     }
 
-    const { email } = jsonwebtoken.decode(token);
+    const { email } = jwt.decode(token);
 
     try {
         const user = await usersCollection.findOne({email});
@@ -144,7 +146,7 @@ export const getFilteredUsersList = async (req, res) => {
     const { token, body } = req;
 
     try {
-        await jwt.verify(token, process.env.JWT_PRIVATE_KEY);
+        await jwtVerify(token, process.env.JWT_PRIVATE_KEY);
     } catch (e) {
         return res.status(401).send('UnauthorizedError');
     }

@@ -4,8 +4,19 @@ import bodyParser from 'body-parser';
 import bearerToken from 'express-bearer-token';
 import database from './database/connection';
 import dotenv from 'dotenv';
-import {createUser, getUsersList, login} from './controllers/authController';
-import {createTransaction, getLoggedUserInfo, getLoggedUserTransactions, getFilteredUsersList} from "./controllers/userProfileConroller";
+import {
+    createUser,
+    getUsersList,
+    login
+} from './controllers/authController';
+import {
+    createTransaction,
+    getLoggedUserInfo,
+    getLoggedUserTransactions,
+    getFilteredUsersList
+} from "./controllers/userProfileConroller";
+// import bluebird from "bluebird";
+// import jwt from "jsonwebtoken";
 
 dotenv.config();
 
@@ -22,28 +33,42 @@ const PORT = process.env.PORT || 3200;
 
 database.connectToServer();
 
-app.get('/', (req, res) => {
+// const jwtVerify = bluebird.promisify(jwt.verify);
+
+// const jwtAuthMiddleware = async (req, res, next) => {
+//     const { token } = req;
+//     console.log(token);
+//     try {
+//         await jwtVerify(token, process.env.JWT_PRIVATE_KEY);
+//     } catch (e) {
+//         console.log(e)
+//         return res.status(401).send('UnauthorizedError');
+//     }
+//
+//     next();
+// };
+
+app.all('/', (req, res) => {
     console.log('get on /');
     res.send('404')
 });
 
-app.post('/users', async (req, res) => {
-    const resJson = await createUser(req, res);
-    // res.json(resJson);
+app.post('/users', (req, res) => {
+    createUser(req, res);
 });
 
-app.post('/sessions/create', async (req, res) => {
-    await login(req, res);
+app.post('/sessions/create', (req, res) => {
+    login(req, res);
 });
 
 // TODO - limit, offset
-app.get('/users', async (req, res) => {
-    await getUsersList(req, res);
+app.get('/users', (req, res) => {
+    getUsersList(req, res);
 });
 
 // protected
-app.post('/api/protected/transactions', async (req, res) => {
-    await createTransaction(req, res);
+app.post('/api/protected/transactions', (req, res) => {
+    createTransaction(req, res);
 });
 
 app.get('/api/protected/user-info', (req, res) => {

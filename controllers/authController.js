@@ -1,7 +1,10 @@
-const jwt = require('jwt-then');
+import bluebird from "bluebird";
+import jwt from 'jsonwebtoken';
 import database from '../database/connection';
 import dotenv from 'dotenv';
 dotenv.config();
+
+const jwtSign = bluebird.promisify(jwt.sign);
 
 export const createUser = async (req, res) => {
     const db = database.getDb();
@@ -11,7 +14,7 @@ export const createUser = async (req, res) => {
         password,
         email
     } = req.body;
-    console.log(req.body)
+
     if (!username || !password || !email) {
         return res.status(400).send('You must fill all fields');
     }
@@ -31,7 +34,7 @@ export const createUser = async (req, res) => {
             transactions: []
         });
 
-        const id_token = await jwt.sign({
+        const id_token = await jwtSign({
             email
         }, process.env.JWT_PRIVATE_KEY);
 
@@ -56,7 +59,7 @@ export const login = async (req, res) => {
         const user = await usersCollection.findOne({email, password});
 
         if (user) {
-            const id_token = await jwt.sign({
+            const id_token = await jwtSign({
                 email
             }, process.env.JWT_PRIVATE_KEY);
 
